@@ -1,0 +1,18 @@
+{{- if .Values.configMap.create -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "registryindexer.fullname" . }}
+  labels:
+    {{- include "registryindexer.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    registries:
+      {{- toYaml .Values.configMap.registries | nindent 6 }}
+    pubsub-listener:
+      {{- toYaml .Values.configMap.pubsubListener | nindent 6 }}
+    indexer:
+      {{- toYaml .Values.configMap.indexer | nindent 6 }}
+    api:
+      {{- toYaml .Values.configMap.api | nindent 6 }}
+{{- end -}}

@@ -1,0 +1,9 @@
+/.vscode
+/.env
+/.gitignore
+/*.json
+/*.yaml
+/cloudbuild*
+/registryindexer
+/examples
+README.md

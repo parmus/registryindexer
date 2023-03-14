@@ -1,0 +1,310 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title":"Registry Indexer",
+        "version":"0.1",
+        "contact": {
+            "name": "Martin Parm",
+            "email": "parmus@gmail.com"
+        }
+    },
+    "tags": [
+        {
+            "name": "Registry Index",
+            "description": "Search in the registry index"
+        },
+        {
+            "name": "Documentation"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "image": {
+                "type": "object",
+                "properties": {
+                    "tag": {
+                        "type": "string",
+                        "example": "<tag>"
+                    },
+                    "created": {
+                        "type": "string",
+                        "example": "2000-01-01T23:59:59.000000000Z"
+                    },
+                    "labels": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                            "example": "<value>"
+                        },
+                        "example": {
+                            "<key>": "<value>"
+                        }
+
+                    }
+                }
+            },
+            "query": {
+                "type": "object",
+                "properties": {
+                    "labels": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "example": {
+                            "<key>": "<value>"
+                        }
+
+                    },
+                    "created_before": {
+                        "type": "string",
+                        "example": "2000-01-01T23:59:59.000000000Z"
+                    },
+                    "created_after": {
+                        "type": "string",
+                        "example": "2000-01-01T23:59:59.000000000Z"
+                    }
+                }
+            }
+        },
+        "responses": {
+            "searchResponse": {
+                "description": "Search result",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "<repository>"
+                                },
+                                "images": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/image"
+                                    }
+                                },
+                                "offset": {
+                                    "type": "integer",
+                                    "description": "Pagination offset used in this query",
+                                    "example": 0
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "description": "Pagination limit used in this query",
+                                    "example": 10
+                                },
+                                "count": {
+                                    "type": "integer",
+                                    "description": "Total number of matched images in repository",
+                                    "example": 42
+                                }
+                            },
+                            "required": ["name", "images", "offset", "limit", "count"]
+                        }
+                    }
+                }
+            }
+        },
+        "parameters": {
+            "repositoryName": {
+                "name": "repositoryName",
+                "description": "Name of repository",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "imageTag" : {
+                "name": "imageTag",
+                "description": "Image tag",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "offset": {
+                "name": "offset",
+                "description": "Pagination offset",
+                "in": "query",
+                "schema": {
+                    "type": "integer",
+                    "example": 0,
+                    "default": 0
+                }
+            },
+            "limit": {
+                "name": "limit",
+                "description": "Pagination limit",
+                "in": "query",
+                "schema": {
+                    "type": "integer",
+                    "example": 10,
+                    "default": 10
+                }
+            }
+        }
+    },
+    "paths": {
+        "/repositories": {
+            "get": {
+                "description":"List indexed repositories",
+                "tags": ["Registry Index"],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "repositories": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Name of repository",
+                                                        "example": "<repository>"
+                                                    },
+                                                    "images": {
+                                                        "type": "integer",
+                                                        "description": "Number of indexed images",
+                                                        "example": 10
+                                                    }
+                                                },
+                                                "required": ["name", "images"]
+                                            }
+                                        }
+                                    },
+                                    "required": ["repositories"]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/repositories/{repositoryName}/tags": {
+            "get": {
+                "description":"List all images in a specific repository",
+                "tags": ["Registry Index"],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/repositoryName"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/searchResponse"
+                    },
+                    "404": {
+                        "description": "No such repository"
+                    }
+                }
+            },
+            "post": {
+                "description":"Search for images in a specific repository",
+                "tags": ["Registry Index"],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/repositoryName"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Query expression",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/query"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/searchResponse"
+                    },
+                    "404": {
+                        "description": "No such repository"
+                    }
+                }
+            }
+        },
+        "/repositories/{repositoryName}/tags/{imageTag}": {
+            "get": {
+                "description":"Get specific image by tag from a repository",
+                "tags": ["Registry Index"],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/repositoryName"
+                    },
+                    {
+                        "$ref": "#/components/parameters/imageTag"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/image"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such repository or image"
+                    }
+                }
+            }
+        },
+        "/docs/openapi.json": {
+            "get": {
+                "description": "OpenAPI 3.0.2 specification for this API",
+                "tags": ["Documentation"],
+                "externalDocs": {
+                    "url": "https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md"
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/docs/": {
+            "get": {
+                "description": "Embedded Swagger UI",
+                "tags": ["Documentation"],
+                "externalDocs": {
+                    "url": "https://github.com/swagger-api/swagger-ui"
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    }
+}

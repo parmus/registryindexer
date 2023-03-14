@@ -1,0 +1,20 @@
+registries:
+  - baseurl: gcr.io
+    # prefixes:
+    # - <some prefix to limit the indexer>
+  - baseurl: https://registry.example.com
+    credentials:
+      username: my_user
+      password: my_password
+webhook-listener:
+    registry: registry.example.com
+    listen: ":5011"
+pubsub-listener:
+    projects:
+      - my-google-project
+    # prefixes:
+    # - <some prefix to limit the indexer>
+indexer:
+    state-file: /mnt/registryindexer/cache.json
+api:
+  cors-allow-all: true
