@@ -15,7 +15,7 @@ configMap:
     cors-allow-all: true
 
 image:
-  repository: registryindexer  # TOOD: Replace with new image location
+  repository: ghcr.io/parmus/registryindexer
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""

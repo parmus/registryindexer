@@ -1,0 +1,14 @@
+name: cleanup
+run-name: Cleanup
+on:
+  workflow_dispatch:
+
+jobs:
+  delete-untagged-images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/delete-package-versions@v4
+        with: 
+          package-name: registryindexer
+          package-type: container
+          delete-only-untagged-versions: 'true'
